@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Link Page</title>
+  <script type="module">
+    // Import the necessary Firebase SDKs
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.8/firebase-app.js";
+    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/9.6.8/firebase-database.js";
+
+    // Your Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyDhiQC-6DWRj9kl38ajQ-VJqPJMKomcVhE",
+      authDomain: "door-bell-cam-prototype-v1.firebaseapp.com",
+      projectId: "door-bell-cam-prototype-v1",
+      storageBucket: "door-bell-cam-prototype-v1.firebasestorage.app",
+      messagingSenderId: "550237718505",
+      appId: "1:550237718505:web:1a061ed3b604906a52ed78",
+      measurementId: "G-J8NRJ5BSMM"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // Button click event to send data to Firebase
+    document.addEventListener("DOMContentLoaded", function() {
+      const button = document.getElementById("notifyButton");
+      button.addEventListener("click", function() {
+        const timestamp = new Date().toISOString();
+        // Set the data in Firebase
+        set(ref(db, 'notifications/'), {
+          message: "Someone clicked on the code!",
+          time: timestamp
+        }).then(() => {
+          alert("Notification sent!");
+        }).catch((error) => {
+          console.error("Error writing to Firebase:", error);
+        });
+      });
+    });
+  </script>
+</head>
+<body>
+  <h1>Press the Button</h1>
+  <button id="notifyButton">Click Me</button>
+</body>
+</html>
