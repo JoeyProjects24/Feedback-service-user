@@ -3,13 +3,100 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Link Page</title>
-  <script type="module">
-    // Import the necessary Firebase SDKs
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.8/firebase-app.js";
-    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/9.6.8/firebase-database.js";
+  <title>Feedback Form</title>
+  <style>
+    /* General Styling */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-    // Your Firebase configuration
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f7f9fa;
+      color: #0f1419;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 500px;
+      background: #ffffff;
+      border: 1px solid #e1e8ed;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+
+    header {
+      background: #1da1f2;
+      color: #ffffff;
+      text-align: center;
+      padding: 15px;
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .form {
+      padding: 20px;
+    }
+
+    textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #e1e8ed;
+      border-radius: 5px;
+      resize: none;
+      font-size: 16px;
+      outline: none;
+      transition: border 0.3s;
+    }
+
+    textarea:focus {
+      border-color: #1da1f2;
+    }
+
+    .char-counter {
+      text-align: right;
+      margin-top: 5px;
+      font-size: 14px;
+      color: #657786;
+    }
+
+    button {
+      width: 100%;
+      background: #1da1f2;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 10px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 15px;
+    }
+
+    button:hover {
+      background: #0d8cd6;
+    }
+
+    @media (max-width: 768px) {
+      textarea {
+        font-size: 14px;
+      }
+
+      button {
+        font-size: 14px;
+      }
+    }
+  </style>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.8/firebase-app.js";
+    import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/9.6.8/firebase-database.js";
+
     const firebaseConfig = {
       apiKey: "AIzaSyDhiQC-6DWRj9kl38ajQ-VJqPJMKomcVhE",
       authDomain: "door-bell-cam-prototype-v1.firebaseapp.com",
@@ -20,30 +107,67 @@
       measurementId: "G-J8NRJ5BSMM"
     };
 
-    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // Button click event to send data to Firebase
-    document.addEventListener("DOMContentLoaded", function() {
-      const button = document.getElementById("notifyButton");
-      button.addEventListener("click", function() {
-        const timestamp = new Date().toISOString();
-        // Set the data in Firebase
-        set(ref(db, 'notifications/'), {
-          message: "Someone clicked on the code!",
-          time: timestamp
-        }).then(() => {
-          alert("Notification sent!");
-        }).catch((error) => {
-          console.error("Error writing to Firebase:", error);
-        });
+    function sendFeedback() {
+      const messageBox = document.getElementById('message');
+      const message = messageBox.value.trim();
+
+      if (message === '') {
+        alert("Message cannot be empty.");
+        return;
+      }
+
+      if (message.length > 210) {
+        alert("Message exceeds the maximum character limit of 210.");
+        return;
+      }
+
+      const feedback = {
+        message: message,
+        time: new Date().toLocaleString()
+      };
+
+      push(ref(db, 'feedbacks/'), feedback)
+        .then(() => {
+          alert("Message sent successfully!");
+          messageBox.value = '';
+          updateCharCounter();
+        })
+        .catch((error) => console.error("Error sending feedback:", error));
+    }
+
+    function updateCharCounter() {
+      const messageBox = document.getElementById('message');
+      const counter = document.getElementById('charCounter');
+      counter.textContent = `${messageBox.value.length}/210`;
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const messageBox = document.getElementById('message');
+      const sendButton = document.getElementById('sendButton');
+
+      sendButton.addEventListener('click', sendFeedback);
+      messageBox.addEventListener('input', updateCharCounter);
+
+      messageBox.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          sendFeedback();
+        }
       });
     });
   </script>
 </head>
 <body>
-  <h1>Press the Button</h1>
-  <button id="notifyButton">Click Me</button>
+  <div class="container">
+    <header>Feedback</header>
+    <div class="form">
+      <textarea id="message" rows="4" maxlength="210" placeholder="What's on your mind?"></textarea>
+      <div id="charCounter" class="char-counter">0/210</div>
+      <button id="sendButton">Send</button>
+    </div>
+  </div>
 </body>
 </html>
